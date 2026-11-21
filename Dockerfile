@@ -5,7 +5,8 @@ WORKDIR /app
 COPY panel/composer.json panel/composer.lock ./
 # ignore-platform-reqs: ایمیج composer بر پایه PHP خیلی جدید است و platform check
 # پکیج‌های locked قدیمی را رد می‌کند؛ runtime نهایی PHP 8.1 است (در CI boot-check شده)
-RUN composer install --no-dev --ignore-platform-reqs --no-interaction --no-progress --prefer-dist
+# no-scripts: artisan در این stage وجود ندارد؛ manifest ها در runtime ساخته می‌شوند
+RUN composer install --no-dev --no-scripts --ignore-platform-reqs --no-interaction --no-progress --prefer-dist
 
 # ---------- مرحله ۲: ایمیج نهایی (PHP 8.1 + Apache — مطابق سرور اصلی) ----------
 FROM php:8.1-apache
