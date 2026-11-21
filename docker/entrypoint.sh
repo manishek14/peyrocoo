@@ -16,22 +16,33 @@ if ! grep -q '^APP_KEY=base64' "$PANEL_DIR/.env"; then
     echo "entrypoint: APP_KEY ساخته شد."
 fi
 
-# ۳) صبر تا آماده شدن دیتابیس
+# ۳) اگر دیتابیس SQLite است، فایل آن باید از قبل وجود داشته باشد (Laravel خودش نمی‌سازد)
+DB_CONN="${DB_CONNECTION:-$(grep -E '^DB_CONNECTION=' "$PANEL_DIR/.env" | cut -d= -f2- || true)}"
+if [ "$DB_CONN" = "sqlite" ]; then
+    DB_PATH="${DB_DATABASE:-$(grep -E '^DB_DATABASE=' "$PANEL_DIR/.env" | cut -d= -f2- || true)}"
+    if [ -n "$DB_PATH" ] && [ "$DB_PATH" != ":memory:" ] && [ ! -f "$DB_PATH" ]; then
+        mkdir -p "$(dirname "$DB_PATH")"
+        touch "$DB_PATH"
+        echo "entrypoint: فایل دیتابیس SQLite ساخته شد ($DB_PATH)."
+    fi
+fi
+
+# ۴) صبر تا آماده شدن دیتابیس
 until php "$PANEL_DIR/artisan" migrate:status >/dev/null 2>&1; do
     echo "entrypoint: در انتظار دیتابیس..."
     sleep 2
 done
 
-# ۴) مایگریشن‌ها (بار اول می‌سازد؛ اجراهای بعدی بی‌اثر)
+# ۵) مایگریشن‌ها (بار اول می‌سازد؛ اجراهای بعدی بی‌اثر)
 php "$PANEL_DIR/artisan" migrate --force
 
-# ۵) Seeder فقط بار اول (تا با هر ری‌استارت ادمین تکراری ساخته نشود)
+# ۶) Seeder فقط بار اول (تا با هر ری‌استارت ادمین تکراری ساخته نشود)
 if [ ! -f "$PANEL_DIR/storage/app/.seeded" ]; then
     php "$PANEL_DIR/artisan" db:seed --force
     touch "$PANEL_DIR/storage/app/.seeded"
 fi
 
-# ۶) دسترسی‌های نوشتن برای www-data
+# ۷) دسترسی‌های نوشتن برای www-data
 chown -R www-data:www-data "$PANEL_DIR/storage" /var/www/public_html/uploads
 
 exec "$@"

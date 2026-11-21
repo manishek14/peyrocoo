@@ -50,4 +50,6 @@ jobs:
             fi
             sleep 2
           done
+          echo "--- container status ---"; docker ps -a --filter name=peyrocoo
+          echo "--- container logs ---"; docker logs --tail 80 peyrocoo || true
           echo "container did not serve /login in time"; exit 1
