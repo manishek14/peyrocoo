@@ -27,22 +27,33 @@ if [ "$DB_CONN" = "sqlite" ]; then
     fi
 fi
 
-# ۴) صبر تا آماده شدن دیتابیس
-until php "$PANEL_DIR/artisan" migrate:status >/dev/null 2>&1; do
-    echo "entrypoint: در انتظار دیتابیس..."
+# ۴) مایگریشن با انتظار برای دیتابیس:
+#    نکته: migrate:status روی دیتابیس تازه (بدون جدول migrations) با exit 1 تمام می‌شود،
+#    پس مستقیماً migrate --force را retry می‌کنیم؛ روی DB دست‌نیافتنی fail می‌ماند و
+#    روی دیتابیس تازه یا موجود همان کار لازم را انجام می‌دهد.
+ATTEMPTS=0
+until php "$PANEL_DIR/artisan" migrate --force >/tmp/migrate.log 2>&1; do
+    ATTEMPTS=$((ATTEMPTS + 1))
+    if [ "$ATTEMPTS" -eq 1 ] || [ $((ATTEMPTS % 15)) -eq 0 ]; then
+        tail -4 /tmp/migrate.log
+    fi
+    if [ "$ATTEMPTS" -ge 150 ]; then
+        echo "entrypoint: دیتابیس پس از ۵ دقیقه در دسترس نشد."
+        tail -20 /tmp/migrate.log
+        exit 1
+    fi
+    echo "entrypoint: در انتظار دیتابیس... (تلاش $ATTEMPTS)"
     sleep 2
 done
+tail -3 /tmp/migrate.log
 
-# ۵) مایگریشن‌ها (بار اول می‌سازد؛ اجراهای بعدی بی‌اثر)
-php "$PANEL_DIR/artisan" migrate --force
-
-# ۶) Seeder فقط بار اول (تا با هر ری‌استارت ادمین تکراری ساخته نشود)
+# ۵) Seeder فقط بار اول (تا با هر ری‌استارت ادمین تکراری ساخته نشود)
 if [ ! -f "$PANEL_DIR/storage/app/.seeded" ]; then
     php "$PANEL_DIR/artisan" db:seed --force
     touch "$PANEL_DIR/storage/app/.seeded"
 fi
 
-# ۷) دسترسی‌های نوشتن برای www-data
+# ۶) دسترسی‌های نوشتن برای www-data
 chown -R www-data:www-data "$PANEL_DIR/storage" /var/www/public_html/uploads
 
 exec "$@"
