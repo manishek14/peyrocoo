@@ -1,0 +1,18 @@
+.git
+.github
+panel/vendor
+panel/node_modules
+panel/.env
+# محتوای runtime حذف شود ولی فایل‌های .gitignore داخل درخت storage بمانند
+panel/storage/logs/*
+!panel/storage/logs/.gitkeep
+panel/storage/framework/cache/*
+!panel/storage/framework/cache/.gitignore
+panel/storage/framework/cache/data/*
+!panel/storage/framework/cache/data/.gitignore
+panel/storage/framework/sessions/*
+!panel/storage/framework/sessions/.gitignore
+panel/storage/framework/views/*
+!panel/storage/framework/views/.gitignore
+uploads
+*.zip

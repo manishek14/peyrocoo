@@ -119,6 +119,31 @@ php -S 127.0.0.1:8080 router.php
 
 **روش production:** وب‌سرور (Apache/Nginx) با docroot روی پوشه `public_html` و پوشه `panel` هم‌سطح آن، دقیقاً مثل سرور اصلی. محتوای `.htaccess` موجود، درخواست‌های غیرفایلی را به `index.php` می‌رساند.
 
+## اجرا با Docker (سریع‌ترین راه)
+
+فایل‌های داکر آماده است؛ یک سرویس وب (PHP 8.1 + Apache) و یک سرویس MySQL با healthcheck:
+
+```bash
+docker compose up -d --build
+```
+
+بعد از بالا آمدن کانتینرها:
+
+- سایت کارکنان: `http://localhost:8080/login` (ثبت‌نام از `/register`)
+- پنل مدیریت: `http://localhost:8080/auth/admin/login` — ادمین پیش‌فرض `admin` / `password` (فقط بار اول توسط seeder ساخته می‌شود)
+
+نقش هر فایل:
+
+| فایل | نقش |
+|---|---|
+| `Dockerfile` | دو مرحله‌ای: نصب وابستگی‌ها با Composer + ایمیج `php:8.1-apache` با docroot روی `public_html` و `panel` کنار آن (مطابق چیدمان سرور اصلی) |
+| `docker-compose.yml` | سرویس‌های `web` و `db` (MySQL 8)؛ دیتابیس در volume `db_data` و فایل‌های آپلودی در volume `uploads` ماندگارند |
+| `docker/entrypoint.sh` | ساخت `.env` از قالب، تولید `APP_KEY`، انتظار برای دیتابیس، `migrate` و seeder فقط بار اول، تنظیم دسترسی‌ها، سپس اجرای Apache |
+| `docker/env.docker` | قالب تنظیمات محیط کانتینر (`DB_HOST=db` و ...) |
+| `docker/apache.conf` | تنظیمات Apache با `AllowOverride All` برای `.htaccess` |
+
+**برای production:** پسورد دیتابیس را در `docker-compose.yml` و `docker/env.docker` عوض کنید، `APP_URL` را با دامنه خودتان جایگزین کنید و `APP_DEBUG=false` نگه دارید. ایمیل‌ها روی حالت `log` هستند (در لاگ Laravel نوشته می‌شوند)؛ برای ارسال واقعی، تنظیمات SMTP را در `.env` کانتینر قرار دهید.
+
 ## نکات مهم
 
 - فایل‌های آپلودی کاربران در `uploads/` وب‌روت نوشته می‌شوند (نه داخل `panel/public`)؛ پس وب‌روت باید قابل‌نوشتن باشد.
