@@ -8,6 +8,13 @@
 $uri = urldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
 $file = __DIR__ . $uri;
 
+// Block private directories, mirroring the .htaccess guard
+// (panel/.env and other tooling files must never be downloadable)
+if (preg_match('#^/(\.git|\.github|panel|docker|scripts|tests)(/|$)#', $uri)) {
+    http_response_code(403);
+    exit('Forbidden');
+}
+
 if ($uri !== '/' && file_exists($file) && !is_dir($file)) {
     return false; // let the built-in server serve the static file
 }

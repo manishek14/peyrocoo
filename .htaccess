@@ -9,6 +9,11 @@
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
+    # Protect private directories (backend source & tooling) when the repo
+    # root is used as the web root; panel/.env must never be downloadable
+    RewriteCond %{REQUEST_URI} ^/(\.git|\.github|panel|docker|scripts|tests)(/|$)
+    RewriteRule ^ - [F,L]
+
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$

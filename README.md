@@ -165,6 +165,7 @@ docker compose up -d --build
 - **CI**: هر پوش، کل مجموعه تست PHPUnit (Unit + Feature) روی PHP 8.1 و همچنین **build و boot واقعی ایمیج Docker** را روی GitHub Actions اجرا می‌کند (`.github/workflows/ci.yml`).
 - **اجرای production-hardened تأییدشده**: با `APP_ENV=production`، `APP_DEBUG=false`، کش‌های config/route/view و وابستگی‌های `--no-dev`، هر دو مجموعه Smoke و E2E (۱۰+۱۰ چک) سبز اجرا شدند.
 - **استقرار روی پلتفرم ابری/VPS**: راهنمای گام‌به‌گام Railway، Render (با `render.yaml`)، Fly.io و VPS در [DEPLOY.md](DEPLOY.md)؛ همه بر پایه همان Dockerfile تأییدشده در CI.
+- **استقرار بدون داکر**: اگر Docker در دسترس نیست، مسیر PHP + Apache/Nginx (یا حتی `php -S` برای پیش‌نمایش) با SQLite یا MySQL گام‌به‌گام در [DEPLOY.md](DEPLOY.md) (گزینه ۵) مستند شده است.
 - **نکته بهینه‌سازی**: در نصب production از `--classmap-authoritative` استفاده نکنید (توضیح در DEPLOY.md).
 
 ## نکات مهم
