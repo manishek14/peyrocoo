@@ -1,0 +1,31 @@
+# Render Blueprint — New → Blueprint → اتصال ریپو
+# دیسک فقط در پلن‌های پرداختی؛ برای تست رایگان بلاک disk را حذف کنید
+services:
+  - type: web
+    name: peyrocoo
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /login
+    disk:
+      name: uploads
+      mountPath: /var/www/public_html/uploads
+      sizeGB: 1
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_URL
+        sync: false
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_DATABASE
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
