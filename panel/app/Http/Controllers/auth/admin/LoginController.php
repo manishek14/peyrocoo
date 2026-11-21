@@ -30,7 +30,6 @@ class LoginController extends Controller
 
 
         $admin = Admin::where('username', $request->input('username'))->first();
-        dd($admin);
 
         if ($admin instanceof Admin) {
             if (!Hash::check($request->input('password'), $admin['password'])) {
